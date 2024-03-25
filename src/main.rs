@@ -43,11 +43,19 @@ fn ask_dimension(dim: Dimension) -> u32 {
 
 // Placeholder for actual drawing
 fn draw_color(width: u32, height: u32, data: &mut Vec<u8>) {
-    let mut ind = 0;
-    let data_size = 4 * width * height;
-    while ind < data_size {
-        data.push(255);
-        ind += 1;
+
+    let delta_r: f64 = 1./(width as f64);
+    let delta_g: f64 = 1./(height as f64);
+
+    for i in 0..height {
+        let g: u8 = 255 - (255. * delta_g * (i as f64)) as u8;
+        for j in 0..width {
+            let r: u8 = (255. * delta_r * (j as f64)) as u8;
+            data.push(r);
+            data.push(g);
+            data.push(0);
+            data.push(255);
+        }
     }
 }
 
