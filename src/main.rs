@@ -21,7 +21,7 @@ fn ask_dimension(dim: Dimension) -> u32 {
     // Depending on the input, print a request
     match dim {
         Dimension::Width => println!("Please input width:"),
-        Dimension::Height => println!("Please input height"),
+        Dimension::Height => println!("Please input height:"),
     }
 
     // Read line from the standard input
@@ -44,8 +44,8 @@ fn ask_dimension(dim: Dimension) -> u32 {
 // Placeholder for actual drawing
 fn draw_color(width: u32, height: u32, data: &mut Vec<u8>) {
 
-    let delta_r: f64 = 1./(width as f64);
-    let delta_g: f64 = 1./(height as f64);
+    let delta_r: f64 = 1./(width as f64 - 1.);
+    let delta_g: f64 = 1./(height as f64 - 1.);
 
     for i in 0..height {
         let g: u8 = 255 - (255. * delta_g * (i as f64)) as u8;
@@ -54,7 +54,7 @@ fn draw_color(width: u32, height: u32, data: &mut Vec<u8>) {
             data.push(r);
             data.push(g);
             data.push(0);
-            data.push(255);
+            data.push(255);    
         }
     }
 }
