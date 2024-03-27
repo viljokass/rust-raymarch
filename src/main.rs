@@ -3,8 +3,12 @@ use std::fs::File;
 use std::io::{self, BufWriter};
 use std::path::Path;
 
-// A raymarching module in which all the magic happens.
-mod render;
+// A module where screen is set up
+mod screen;
+// A vecmath module
+pub mod vecmath;
+// A raymarch module where all the magic happens.
+mod raymarch;
 
 const DEFAULT_DIM: u32 = 100;
 
@@ -69,7 +73,7 @@ fn main() {
 
     // Set the data - here we split into another module.
     let mut data = Vec::new();
-    render::render(width, height, &mut data);
+    screen::render(width, height, &mut data);
 
     // Write the data
     writer
