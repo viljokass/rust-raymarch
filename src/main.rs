@@ -72,5 +72,7 @@ fn main() {
     render::render(width, height, &mut data);
 
     // Write the data
-    writer.write_image_data(&data).expect("Unable to write the image data");
+    writer
+        .write_image_data(&data)
+        .expect("Unable to write the image data");
 }
