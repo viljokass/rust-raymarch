@@ -1,5 +1,5 @@
 # Rust Raymarch
-A system that might eventually produce images using raymarching tehniques.
+A system that produces images using raymarching tehniques.
 # Why
 So that I learn me some Rust. Also I like raymarching.
 # What
@@ -12,6 +12,6 @@ module, which iterates over each pixel, converting pixels into screen coordinate
 During each iteration, we do raymarch - we also pass the scene to the raymarcher.
 
 During the raymarch, we do usual raymarching stuff, evaluating the scene in order to
-get the closest distance and gradient for the sruface normal. Cool stuff.
+get the closest distance and gradient for the sruface normal.
 
-All this gets saved into a .png file.
+All this gets saved into a .png file. Cool stuff.
