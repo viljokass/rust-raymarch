@@ -1,4 +1,6 @@
 use png;
+use scene::{Scene, SDF};
+use vecmath::Vec3;
 use std::fs::File;
 use std::io::{self, BufWriter};
 use std::path::Path;
@@ -6,9 +8,11 @@ use std::path::Path;
 // A module where screen is set up
 mod screen;
 // A vecmath module
-pub mod vecmath;
+mod vecmath;
 // A raymarch module where all the magic happens.
 mod raymarch;
+// A Scene module
+mod scene;
 
 const DEFAULT_DIM: u32 = 100;
 
@@ -48,6 +52,42 @@ fn ask_dimension(dim: Dimension) -> u32 {
     }
 }
 
+// Create a scene - hardcoded, but has been split in
+// such a way that creating from file shouldn't be too hard.
+fn setup_scene() -> Scene {
+    let mut objs: Vec<SDF> = Vec::new();
+
+    let s1 = SDF::Sphere {
+        pos: Vec3::from(-1.5, 0., -2.),
+        rad: 1.,
+    };
+    objs.push(s1);
+
+    let s2 = SDF::Sphere {
+        pos: Vec3::from(1., 2., 0.),
+        rad: 1.
+    };
+    objs.push(s2);
+
+    let s3 = SDF::Sphere {
+        pos: Vec3::from(2., -1., -1.),
+        rad: 1.,
+    };
+    objs.push(s3);
+
+    let p1 = SDF::Plane {
+        pos: Vec3::from(0., -3., 0.),
+        nor: Vec3::from(0., 1., 0.),
+        h: 0.01
+    };
+    objs.push(p1);
+
+    Scene {
+        lpos: Vec3::from(0., 2., -4.),
+        objs: objs,
+    }
+}
+
 // Create an image file and save something onto it.
 fn main() {
     // Ask the image dimensions from the user
@@ -56,6 +96,8 @@ fn main() {
 
     // For debugging purposes
     println!("Dimensions of the image is {}x{}.", width, height);
+
+    let scene = setup_scene();
 
     // Set the path, file and buffer writer
     let path = Path::new(r"./img.png");
@@ -73,7 +115,7 @@ fn main() {
 
     // Set the data - here we split into another module.
     let mut data = Vec::new();
-    screen::render(width, height, &mut data);
+    screen::render(width, height, &mut data, &scene);
 
     // Write the data
     writer

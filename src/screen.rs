@@ -1,5 +1,6 @@
-use super::vecmath::Vec3;
-use super::raymarch;
+use crate::vecmath::Vec3;
+use crate::scene::Scene;
+use crate::raymarch;
 
 struct ScreenCoord {
     x: f64,
@@ -52,7 +53,7 @@ impl Px {
 }
 
 // Preparing for raymarch.
-fn draw(screen_c: ScreenCoord) -> Px {
+fn draw(screen_c: ScreenCoord, scene: &Scene) -> Px {
 
     let sx = screen_c.x;
     let sy = screen_c.y;
@@ -68,7 +69,7 @@ fn draw(screen_c: ScreenCoord) -> Px {
     let ray_direction = screen.sub(&ray_origin).normalize();
 
     // Raymarching!
-    raymarch::raymarch(&ray_origin, &ray_direction).unwrap()
+    raymarch::raymarch(&ray_origin, &ray_direction, &scene).unwrap()
 }
 
 // Converts the pixels coming in into screen coordinates
@@ -92,14 +93,14 @@ fn px_to_screen(x: u32, y: u32, w: u32, h: u32, asp_rat: f64) -> ScreenCoord {
 // * data: The vector of u8's in which the image is stored.
 //         The image has to go in row-major order. For each pixel, one must
 //         push 4 u8 values to the data vector: Red, Green, Blue and Alpha.
-pub fn render(w: u32, h: u32, data: &mut Vec<u8>) {
+pub fn render(w: u32, h: u32, data: &mut Vec<u8>, scene: &Scene) {
     let aspect_ratio: f64 = (w as f64) / (h as f64);
 
     // We want to input the pixels from up-down, so we reverse the y-axis
     for j in (0..h).rev() {
         for i in 0..w {
             let sc = px_to_screen(i, j, w, h, aspect_ratio);
-            let px: Px = draw(sc);
+            let px: Px = draw(sc, &scene);
             data.push((255. * px.get_ch(&Channel::Red)) as u8);
             data.push((255. * px.get_ch(&Channel::Green)) as u8);
             data.push((255. * px.get_ch(&Channel::Blue)) as u8);
