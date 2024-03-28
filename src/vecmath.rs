@@ -46,7 +46,7 @@ impl Vec3 {
         }
     }
 
-    pub fn scale(&self, scalar: f64) -> Vec3{
+    pub fn scale(&self, scalar: f64) -> Vec3 {
         Vec3 {
             x: self.x * scalar,
             y: self.y * scalar,
