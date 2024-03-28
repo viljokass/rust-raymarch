@@ -1,4 +1,4 @@
-use super::vecmath;
+use super::vecmath::Vec3;
 use super::raymarch;
 
 struct ScreenCoord {
@@ -6,11 +6,49 @@ struct ScreenCoord {
     y: f64,
 }
 
+pub enum Channel {
+    Red,
+    Green,
+    Blue,
+    Alpha,
+}
+
 pub struct Px {
-    pub r: u8,
-    pub g: u8,
-    pub b: u8,
-    pub a: u8,
+    r: f64,
+    g: f64,
+    b: f64,
+    a: f64,
+}
+
+impl Px {
+    pub fn from(vals: &Vec<f64>) -> Option<Px> {
+        let l = vals.len();
+        if l != 4 {
+            return None;
+        }
+        for v in vals {
+            if *v < 0. || *v > 1. {
+                println!("RBGA values must be within [0, 1] range");
+                return None;
+            }
+        }
+        let px = Px {
+            r: vals[0],
+            g: vals[1],
+            b: vals[2],
+            a: vals[3],
+        };
+        Some(px)
+    }
+
+    pub fn get_ch(&self, channel: &Channel) -> f64 {
+        match channel {
+            Channel::Red => self.r,
+            Channel::Green => self.g,
+            Channel::Blue => self.b,
+            Channel::Alpha => self.a,
+        }
+    }
 }
 
 // Preparing for raymarch.
@@ -22,15 +60,15 @@ fn draw(screen_c: ScreenCoord) -> Px {
     let cam_depth = -5.0;
 
     // The starting point of the ray
-    let ray_origin = vecmath::Vec3::from(0., 0., cam_depth);
+    let ray_origin = Vec3::from(0., 0., cam_depth);
 
     // The direction of the ray
-    let screen = vecmath::Vec3::from(sx, sy, cam_depth + 1.);
+    let screen = Vec3::from(sx, sy, cam_depth + 1.);
 
     let ray_direction = screen.sub(&ray_origin).normalize();
 
     // Raymarching!
-    raymarch::raymarch(&ray_origin, &ray_direction)
+    raymarch::raymarch(&ray_origin, &ray_direction).unwrap()
 }
 
 // Converts the pixels coming in into screen coordinates
@@ -62,10 +100,10 @@ pub fn render(w: u32, h: u32, data: &mut Vec<u8>) {
         for i in 0..w {
             let sc = px_to_screen(i, j, w, h, aspect_ratio);
             let px: Px = draw(sc);
-            data.push(px.r);
-            data.push(px.g);
-            data.push(px.b);
-            data.push(px.a);
+            data.push((255. * px.get_ch(&Channel::Red)) as u8);
+            data.push((255. * px.get_ch(&Channel::Green)) as u8);
+            data.push((255. * px.get_ch(&Channel::Blue)) as u8);
+            data.push((255. * px.get_ch(&Channel::Alpha)) as u8);
         }
     }
 }
