@@ -1,6 +1,6 @@
-use crate::vecmath::Vec3;
-use crate::scene::Scene;
 use crate::raymarch;
+use crate::scene::Scene;
+use crate::vecmath::Vec3;
 
 struct ScreenCoord {
     x: f64,
@@ -27,17 +27,11 @@ impl Px {
         if l != 4 {
             return None;
         }
-        for v in vals {
-            if *v < 0. || *v > 1. {
-                println!("RBGA values must be within [0, 1] range");
-                return None;
-            }
-        }
         let px = Px {
-            r: vals[0],
-            g: vals[1],
-            b: vals[2],
-            a: vals[3],
+            r: vals[0].clamp(0., 1.),
+            g: vals[1].clamp(0., 1.),
+            b: vals[2].clamp(0., 1.),
+            a: vals[3].clamp(0., 1.),
         };
         Some(px)
     }
@@ -54,17 +48,14 @@ impl Px {
 
 // Preparing for raymarch.
 fn draw(screen_c: ScreenCoord, scene: &Scene) -> Px {
-
     let sx = screen_c.x;
     let sy = screen_c.y;
 
-    let cam_depth = -5.0;
-
     // The starting point of the ray
-    let ray_origin = Vec3::from(0., 0., cam_depth);
+    let ray_origin = &scene.cpos;
 
     // The direction of the ray
-    let screen = Vec3::from(sx, sy, cam_depth + 1.);
+    let screen = Vec3::from(sx, sy, &ray_origin.z + 1.);
 
     let ray_direction = screen.sub(&ray_origin).normalize();
 

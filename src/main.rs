@@ -1,9 +1,9 @@
 use png;
 use scene::{Scene, SDF};
-use vecmath::Vec3;
 use std::fs::File;
 use std::io::{self, BufWriter};
 use std::path::Path;
+use vecmath::Vec3;
 
 // A module where screen is set up
 mod screen;
@@ -65,7 +65,7 @@ fn setup_scene() -> Scene {
 
     let s2 = SDF::Sphere {
         pos: Vec3::from(1., 2., 0.),
-        rad: 1.
+        rad: 1.,
     };
     objs.push(s2);
 
@@ -78,12 +78,17 @@ fn setup_scene() -> Scene {
     let p1 = SDF::Plane {
         pos: Vec3::from(0., -3., 0.),
         nor: Vec3::from(0., 1., 0.),
-        h: 0.01
+        h: 0.01,
     };
     objs.push(p1);
 
     Scene {
-        lpos: Vec3::from(0., 2., -4.),
+        lpos: Vec3::from(0., 2., -3.),
+        cpos: Vec3::from(0., 0., -5.),
+
+        lcol: Vec3::from(1., 0.8, 0.8),
+        acol: Vec3::from(0., 0., 0.),
+
         objs: objs,
     }
 }
@@ -105,7 +110,6 @@ fn main() {
     let ref mut w = BufWriter::new(file);
 
     // Set up the image encoder from png crate
-    // Currently uses 2 by 2 images.
     let mut encoder = png::Encoder::new(w, width, height);
     encoder.set_color(png::ColorType::Rgba);
     encoder.set_depth(png::BitDepth::Eight);

@@ -1,13 +1,13 @@
-use crate::vecmath::Vec3;
-use crate::screen::Px;
 use crate::scene::Scene;
+use crate::screen::Px;
+use crate::vecmath::Vec3;
 
 const MAX_DIST: f64 = 500.0;
 const MAX_ITER: u32 = 250;
 const EPSILON: f64 = 0.001;
 const DX: Vec3 = Vec3 {
-    x: EPSILON, 
-    y: 0., 
+    x: EPSILON,
+    y: 0.,
     z: 0.,
 };
 const DY: Vec3 = Vec3 {
@@ -24,24 +24,38 @@ const DZ: Vec3 = Vec3 {
 // Shading funtion - currently shades only diff light
 // Object color is orange.
 fn shade(p: &Vec3, n: &Vec3, scene: &Scene) -> Option<Px> {
-
     let lpos = &scene.lpos;
+    let cpos = &scene.cpos;
+
+    let lcol = &scene.lcol;
+    let acol = &scene.acol;
+
+    let ambi_c: f64 = 0.1;
+    let ambi_c = acol.scale(ambi_c);
 
     let dir_to_light = lpos.sub(p).normalize();
 
-    let diff_s: f64 = f64::max(0.0, dir_to_light.dot(&n));
-    let diff_c: Vec3 = Vec3::from(1., 0.5, 0.).scale(diff_s);
+    let diff_c: f64 = f64::max(0.0, dir_to_light.dot(&n));
+    let diff_c: Vec3 = Vec3::from(1., 0.5, 0.).scale(diff_c).times(&lcol);
 
-    Px::from(&vec![diff_c.x, diff_c.y, diff_c.z, 1.])
+    let dir_to_cam = cpos.sub(p).normalize();
+    let reflect = dir_to_light.scale(-1.).reflect(&n).normalize();
+    let spec_c = f64::powi(f64::max(dir_to_cam.dot(&reflect), 0.0), 32);
+    let spec_c = lcol.scale(spec_c);
+
+    let sum_c = &spec_c.add(&diff_c).add(&ambi_c);
+
+    Px::from(&vec![sum_c.x, sum_c.y, sum_c.z, 1.])
 }
 
 // Calculating normal using gradient approximation
 fn calc_norm(p: &Vec3, scene: &Scene) -> Vec3 {
     Vec3 {
-        x: scene.eval(&p.add(&DX))-scene.eval(&p.sub(&DX)),
-        y: scene.eval(&p.add(&DY))-scene.eval(&p.sub(&DY)),
-        z: scene.eval(&p.add(&DZ))-scene.eval(&p.sub(&DZ)),
-    }.normalize()
+        x: scene.eval(&p.add(&DX)) - scene.eval(&p.sub(&DX)),
+        y: scene.eval(&p.add(&DY)) - scene.eval(&p.sub(&DY)),
+        z: scene.eval(&p.add(&DZ)) - scene.eval(&p.sub(&DZ)),
+    }
+    .normalize()
 }
 
 // THE raymarch function.
@@ -63,5 +77,7 @@ pub fn raymarch(ro: &Vec3, rd: &Vec3, scene: &Scene) -> Option<Px> {
         dist += dist_to_nearest;
     }
     // If no hits, then return black.
-    return Px::from(&vec![0., 0., 0., 1.]);
+    let nhstr = 0.05;
+    let ac = &scene.acol.scale(nhstr);
+    return Px::from(&vec![ac.x, ac.y, ac.z, 1.]);
 }
