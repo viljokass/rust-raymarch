@@ -60,7 +60,7 @@ fn draw(screen_c: ScreenCoord, scene: &Scene) -> Px {
     let ray_direction = screen.sub(&ray_origin).normalize();
 
     // Raymarching!
-    raymarch::raymarch(&ray_origin, &ray_direction, &scene).unwrap()
+    raymarch::raymarch(&ray_origin, &ray_direction, &scene.cpos, &scene).unwrap()
 }
 
 // Converts the pixels coming in into screen coordinates
