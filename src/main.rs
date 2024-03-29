@@ -1,5 +1,5 @@
 use png;
-use scene::{Scene, SDF};
+use scene::{Scene, SDF, Obj, Material};
 use std::fs::File;
 use std::io::{self, BufWriter};
 use std::path::Path;
@@ -55,38 +55,56 @@ fn ask_dimension(dim: Dimension) -> u32 {
 // Create a scene - hardcoded, but has been split in
 // such a way that creating from file shouldn't be too hard.
 fn setup_scene() -> Scene {
-    let mut objs: Vec<SDF> = Vec::new();
+    let mut objs: Vec<Obj> = Vec::new();
 
-    let s1 = SDF::Sphere {
-        pos: Vec3::from(-1.5, 0., -2.),
-        rad: 1.,
+    let s1 = Obj {
+        sdf: SDF::Sphere {
+            pos: Vec3::from(-1.5, 0., -2.),
+            rad: 1.,
+        },
+        mat: Material::Color {
+            col: Vec3::from(1., 0.5, 0.2),
+        },
     };
     objs.push(s1);
 
-    let s2 = SDF::Sphere {
-        pos: Vec3::from(1., 2., 0.),
-        rad: 1.,
+    let s2 = Obj {
+        sdf: SDF::Sphere {
+            pos: Vec3::from(1., 2., 0.),
+            rad: 1.,
+        },
+        mat: Material::Reflect,
     };
     objs.push(s2);
 
-    let s3 = SDF::Sphere {
-        pos: Vec3::from(2., -1., -1.),
-        rad: 1.,
+    let s3 = Obj {
+        sdf: SDF::Sphere {
+            pos: Vec3::from(2., -1., -1.),
+            rad: 1.,
+        },
+        mat: Material::Color {
+            col: Vec3::from(1., 0.6, 0.6),
+        }
     };
     objs.push(s3);
 
-    let p1 = SDF::Plane {
-        pos: Vec3::from(0., -3., 0.),
-        nor: Vec3::from(0., 1., 0.),
-        h: 0.01,
+    let p1 = Obj {
+        sdf: SDF::Plane {
+            pos: Vec3::from(0., -3., 0.),
+            nor: Vec3::from(0., 1., 0.),
+            h: 0.01,
+        },
+        mat: Material::Color {
+            col: Vec3::from(0.1, 0.1, 0.3),
+        },
     };
     objs.push(p1);
 
     Scene {
-        lpos: Vec3::from(0., 2., -3.),
+        lpos: Vec3::from(0., 2., -2.),
         cpos: Vec3::from(0., 0., -5.),
 
-        lcol: Vec3::from(1., 0.8, 0.8),
+        lcol: Vec3::from(1., 0.6, 0.4),
         acol: Vec3::from(0., 0., 0.),
 
         objs: objs,

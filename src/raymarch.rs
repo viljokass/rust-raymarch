@@ -1,4 +1,4 @@
-use crate::scene::Scene;
+use crate::scene::{Scene, Material};
 use crate::screen::Px;
 use crate::vecmath::Vec3;
 
@@ -23,37 +23,51 @@ const DZ: Vec3 = Vec3 {
 
 // Shading funtion - currently shades only diff light
 // Object color is orange.
-fn shade(p: &Vec3, n: &Vec3, scene: &Scene) -> Option<Px> {
-    let lpos = &scene.lpos;
+fn shade(p: &Vec3, n: &Vec3, scene: &Scene, mat: &Material) -> Option<Px> {
     let cpos = &scene.cpos;
-
-    let lcol = &scene.lcol;
-    let acol = &scene.acol;
-
-    let ambi_c: f64 = 0.1;
-    let ambi_c = acol.scale(ambi_c);
-
-    let dir_to_light = lpos.sub(p).normalize();
-
-    let diff_c: f64 = f64::max(0.0, dir_to_light.dot(&n));
-    let diff_c: Vec3 = Vec3::from(1., 0.5, 0.).scale(diff_c).times(&lcol);
-
     let dir_to_cam = cpos.sub(p).normalize();
-    let reflect = dir_to_light.scale(-1.).reflect(&n).normalize();
-    let spec_c = f64::powi(f64::max(dir_to_cam.dot(&reflect), 0.0), 32);
-    let spec_c = lcol.scale(spec_c);
 
-    let sum_c = &spec_c.add(&diff_c).add(&ambi_c);
+    // Matching done based on surface material
+    match mat {
+        // If the material is reflective, then raymarch again
+        Material::Reflect => {
+            let mut newscene = scene.clone();
+            newscene.cpos = p.clone();
+            let rd = dir_to_cam.scale(-1.).reflect(&n).normalize();
+            let ro = &p.add(&rd.scale(2. * EPSILON));
+            raymarch(&ro, &rd, &newscene)
+        },
+        // If the material is color, then Phong shader.
+        Material::Color { col } => {
+            let lpos = &scene.lpos;
+            let lcol = &scene.lcol;
+            let acol = &scene.acol;
 
-    Px::from(&vec![sum_c.x, sum_c.y, sum_c.z, 1.])
+            let ambi_c: f64 = 0.1;
+            let ambi_c = acol.scale(ambi_c);
+
+            let dir_to_light = lpos.sub(p).normalize();
+
+            let diff_c: f64 = f64::max(0.0, dir_to_light.dot(&n));
+            let diff_c = &col.scale(diff_c).times(&lcol);
+
+            let reflect = dir_to_light.scale(-1.).reflect(&n).normalize();
+            let spec_c = f64::powi(f64::max(dir_to_cam.dot(&reflect), 0.0), 32);
+            let spec_c = lcol.scale(spec_c);
+
+            let sum_c = &spec_c.add(&diff_c).add(&ambi_c);
+
+            Px::from(&vec![sum_c.x, sum_c.y, sum_c.z, 1.])
+        }
+    }
 }
 
 // Calculating normal using gradient approximation
 fn calc_norm(p: &Vec3, scene: &Scene) -> Vec3 {
     Vec3 {
-        x: scene.eval(&p.add(&DX)) - scene.eval(&p.sub(&DX)),
-        y: scene.eval(&p.add(&DY)) - scene.eval(&p.sub(&DY)),
-        z: scene.eval(&p.add(&DZ)) - scene.eval(&p.sub(&DZ)),
+        x: scene.eval(&p.add(&DX)).sdfv - scene.eval(&p.sub(&DX)).sdfv,
+        y: scene.eval(&p.add(&DY)).sdfv - scene.eval(&p.sub(&DY)).sdfv,
+        z: scene.eval(&p.add(&DZ)).sdfv - scene.eval(&p.sub(&DZ)).sdfv,
     }
     .normalize()
 }
@@ -63,11 +77,12 @@ pub fn raymarch(ro: &Vec3, rd: &Vec3, scene: &Scene) -> Option<Px> {
     let mut dist: f64 = 0.;
     for _i in 0..MAX_ITER {
         let pos: Vec3 = ro.add(&rd.scale(dist));
-        let dist_to_nearest = scene.eval(&pos);
+        let obj = scene.eval(&pos);
+        let dist_to_nearest = obj.sdfv;
         if dist_to_nearest < EPSILON {
             // Surface normal
             let normal = calc_norm(&pos, &scene);
-            return shade(&pos, &normal, &scene);
+            return shade(&pos, &normal, &scene, &obj.mat);
         }
 
         if dist > MAX_DIST {
