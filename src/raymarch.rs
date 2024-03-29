@@ -30,11 +30,9 @@ fn shade(p: &Vec3, n: &Vec3, cpos: &Vec3, scene: &Scene, mat: &Material) -> Opti
     match mat {
         // If the material is reflective, then raymarch again
         Material::Reflect => {
-            let mut newscene = scene.clone();
-            newscene.cpos = p.clone();
             let rd = dir_to_cam.scale(-1.).reflect(&n).normalize();
             let ro = &p.add(&rd.scale(2. * EPSILON));
-            raymarch(&ro, &rd, &p, &newscene)
+            raymarch(&ro, &rd, &p, &scene)
         },
         // If the material is color, then Phong shader.
         Material::Color { col } => {
