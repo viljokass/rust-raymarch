@@ -47,7 +47,7 @@ impl Px {
 }
 
 // Preparing for raymarch.
-fn draw(screen_c: ScreenCoord, scene: &Scene) -> Px {
+fn draw(screen_c: ScreenCoord, scene: &Scene) -> Vec3 {
     let sx = screen_c.x;
     let sy = screen_c.y;
 
@@ -60,7 +60,7 @@ fn draw(screen_c: ScreenCoord, scene: &Scene) -> Px {
     let ray_direction = screen.sub(&ray_origin).normalize();
 
     // Raymarching!
-    raymarch::raymarch(&ray_origin, &ray_direction, &scene.cpos, &scene).unwrap()
+    raymarch::raymarch(&ray_origin, &ray_direction, &scene.cpos, &scene)
 }
 
 // Converts the pixels coming in into screen coordinates
@@ -91,7 +91,8 @@ pub fn render(w: u32, h: u32, data: &mut Vec<u8>, scene: &Scene) {
     for j in (0..h).rev() {
         for i in 0..w {
             let sc = px_to_screen(i, j, w, h, aspect_ratio);
-            let px: Px = draw(sc, &scene);
+            let pc = draw(sc, &scene);
+            let px = Px::from(&vec![pc.x, pc.y, pc.z, 1.]).unwrap();
             data.push((255. * px.get_ch(&Channel::Red)) as u8);
             data.push((255. * px.get_ch(&Channel::Green)) as u8);
             data.push((255. * px.get_ch(&Channel::Blue)) as u8);

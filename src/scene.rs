@@ -3,7 +3,10 @@ use crate::vecmath::Vec3;
 #[derive(Clone)]
 pub enum Material {
     Reflect,
-    Color { col: Vec3 },
+    Color {
+        col: Vec3,
+        shine: i32,
+    },
 }
 
 #[derive(Clone)]
@@ -75,6 +78,7 @@ pub fn create_scene() -> Scene {
         },
         mat: Material::Color {
             col: Vec3::from(1., 0.5, 0.2),
+            shine: 32,
         },
     };
     objs.push(s1);
@@ -95,18 +99,20 @@ pub fn create_scene() -> Scene {
         },
         mat: Material::Color {
             col: Vec3::from(1., 0.6, 0.6),
+            shine: 32,
         },
     };
     objs.push(s3);
 
     let p1 = Obj {
         sdf: SDF::Plane {
-            pos: Vec3::from(0., -3., 0.),
-            nor: Vec3::from(0., 1., 0.),
+            pos: Vec3::from(0., -3., -3.),
+            nor: Vec3::from(0., 2., -1.).normalize(),
             h: 0.01,
         },
         mat: Material::Color {
             col: Vec3::from(0.1, 0.1, 0.3),
+            shine: 32,
         },
     };
     objs.push(p1);

@@ -1,5 +1,4 @@
 use crate::scene::{Scene, Material};
-use crate::screen::Px;
 use crate::vecmath::Vec3;
 
 const MAX_DIST: f64 = 2500.0;
@@ -23,7 +22,7 @@ const DZ: Vec3 = Vec3 {
 
 // Shading funtion - currently shades only diff light
 // Object color is orange.
-fn shade(p: &Vec3, n: &Vec3, cpos: &Vec3, scene: &Scene, mat: &Material) -> Option<Px> {
+fn shade(p: &Vec3, n: &Vec3, cpos: &Vec3, scene: &Scene, mat: &Material) -> Vec3 {
     let dir_to_cam = cpos.sub(p).normalize();
 
     // Matching done based on surface material
@@ -32,10 +31,10 @@ fn shade(p: &Vec3, n: &Vec3, cpos: &Vec3, scene: &Scene, mat: &Material) -> Opti
         Material::Reflect => {
             let rd = dir_to_cam.scale(-1.).reflect(&n).normalize();
             let ro = &p.add(&rd.scale(2. * EPSILON));
-            raymarch(&ro, &rd, &p, &scene)
+            raymarch(&ro, &rd, &p, &scene).add(&Vec3::from(0.02, 0.02, 0.02))
         },
         // If the material is color, then Phong shader.
-        Material::Color { col } => {
+        Material::Color { col, shine } => {
             let lpos = &scene.lpos;
             let lcol = &scene.lcol;
             let acol = &scene.acol;
@@ -49,12 +48,11 @@ fn shade(p: &Vec3, n: &Vec3, cpos: &Vec3, scene: &Scene, mat: &Material) -> Opti
             let diff_c = &col.scale(diff_c).times(&lcol);
 
             let reflect = dir_to_light.scale(-1.).reflect(&n).normalize();
-            let spec_c = f64::powi(f64::max(dir_to_cam.dot(&reflect), 0.0), 32);
+            let spec_c = f64::powi(f64::max(dir_to_cam.dot(&reflect), 0.0), *shine);
             let spec_c = lcol.scale(spec_c);
 
-            let sum_c = &spec_c.add(&diff_c).add(&ambi_c);
-
-            Px::from(&vec![sum_c.x, sum_c.y, sum_c.z, 1.])
+            let col = &spec_c.add(&diff_c).add(&ambi_c);
+            col.clone()
         }
     }
 }
@@ -70,7 +68,7 @@ fn calc_norm(p: &Vec3, scene: &Scene) -> Vec3 {
 }
 
 // THE raymarch function.
-pub fn raymarch(ro: &Vec3, rd: &Vec3, cpos: &Vec3, scene: &Scene) -> Option<Px> {
+pub fn raymarch(ro: &Vec3, rd: &Vec3, cpos: &Vec3, scene: &Scene) -> Vec3 {
     let mut dist: f64 = 0.;
     for _i in 0..MAX_ITER {
         let pos: Vec3 = ro.add(&rd.scale(dist));
@@ -90,5 +88,5 @@ pub fn raymarch(ro: &Vec3, rd: &Vec3, cpos: &Vec3, scene: &Scene) -> Option<Px> 
     }
     // If no hits, then return black.
     let ac = &scene.acol.scale(0.2);
-    return Px::from(&vec![ac.x, ac.y, ac.z, 1.]);
+    ac.clone()
 }
