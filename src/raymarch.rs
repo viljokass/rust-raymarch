@@ -87,6 +87,6 @@ pub fn raymarch(ro: &Vec3, rd: &Vec3, cpos: &Vec3, scene: &Scene) -> Vec3 {
         dist += dist_to_nearest;
     }
     // If no hits, then return black.
-    let ac = &scene.acol.scale(0.2);
+    let ac = &scene.acol.scale(0.15);
     ac.clone()
 }

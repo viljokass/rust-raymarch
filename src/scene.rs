@@ -77,7 +77,7 @@ pub fn create_scene() -> Scene {
             rad: 1.,
         },
         mat: Material::Color {
-            col: Vec3::from(1., 0.5, 0.2),
+            col: Vec3::from(1., 0.2, 0.2),
             shine: 32,
         },
     };
@@ -85,7 +85,7 @@ pub fn create_scene() -> Scene {
 
     let s2 = Obj {
         sdf: SDF::Sphere {
-            pos: Vec3::from(1., 2., 0.),
+            pos: Vec3::from(2.5, -1., -0.3),
             rad: 1.,
         },
         mat: Material::Reflect
@@ -94,15 +94,27 @@ pub fn create_scene() -> Scene {
 
     let s3 = Obj {
         sdf: SDF::Sphere {
-            pos: Vec3::from(2., -1., -1.),
+            pos: Vec3::from(2.5, 3., -0.3),
             rad: 1.,
         },
         mat: Material::Color {
-            col: Vec3::from(1., 0.6, 0.6),
+            col: Vec3::from(1., 0.9, 0.3),
             shine: 32,
         },
     };
     objs.push(s3);
+
+    let s4 = Obj {
+        sdf: SDF::Sphere {
+            pos: Vec3::from(-2., 4., 0.),
+            rad: 1.,
+        },
+        mat: Material::Color {
+            col: Vec3::from(0.4, 0.8, 0.4),
+            shine: 32,
+        },
+    };
+    objs.push(s4);
 
     let p1 = Obj {
         sdf: SDF::Plane {
@@ -116,6 +128,19 @@ pub fn create_scene() -> Scene {
         },
     };
     objs.push(p1);
+
+    let p2 = Obj {
+        sdf: SDF::Plane {
+            pos: Vec3::from(0., 7., -3.),
+            nor: Vec3::from(0., -105., -100.).normalize(),
+            h: 0.01,
+        },
+        mat: Material::Color {
+            col: Vec3::from(0.4, 0.3, 0.7),
+            shine: 32,
+        },
+    };
+    objs.push(p2);
 
     Scene {
         lpos: Vec3::from(0., 2., -3.),
